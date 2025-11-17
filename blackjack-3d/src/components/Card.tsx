@@ -1,8 +1,9 @@
 import { useRef } from 'react';
 import { useSpring, animated } from '@react-spring/three';
-import { Text } from '@react-three/drei';
+import { Text, useTexture } from '@react-three/drei';
 import type { Card as CardType } from '../game/types';
 import * as THREE from 'three';
+import uncLogo from '../assets/unc-logo.png';
 
 interface CardProps {
   card: CardType;
@@ -27,6 +28,9 @@ function getSuitSymbol(suit: string): string {
 
 export function Card({ card, position, faceUp, index }: CardProps) {
   const meshRef = useRef<THREE.Group>(null);
+
+  // Load UNC logo texture
+  const logoTexture = useTexture(uncLogo);
 
   // Animate card flip
   const { rotationY } = useSpring({
@@ -55,72 +59,65 @@ export function Card({ card, position, faceUp, index }: CardProps) {
       {/* Card border/outline (bottom - back side) */}
       <mesh position={[0, 0, -0.015]}>
         <planeGeometry args={[CARD_WIDTH + 0.1, CARD_HEIGHT + 0.1]} />
-        <meshStandardMaterial color="#8B0000" />
+        <meshStandardMaterial color="#13294B" />
       </mesh>
 
-      {/* Card back (red pattern) */}
+      {/* Card back (UNC Carolina Blue) */}
       <mesh position={[0, 0, -0.01]} rotation={[0, 0, Math.PI]}>
         <planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
-        <meshStandardMaterial color="#DC143C" />
+        <meshStandardMaterial color="#7BAFD4" />
       </mesh>
 
-      {/* Card back pattern - inner white border */}
+      {/* Card back pattern - white border */}
       <mesh position={[0, 0, -0.009]} rotation={[0, 0, Math.PI]}>
-        <planeGeometry args={[CARD_WIDTH * 0.85, CARD_HEIGHT * 0.85]} />
+        <planeGeometry args={[CARD_WIDTH * 0.9, CARD_HEIGHT * 0.9]} />
         <meshStandardMaterial color="#FFFFFF" />
       </mesh>
 
-      {/* Card back pattern - inner red area */}
+      {/* UNC Logo image */}
       <mesh position={[0, 0, -0.008]} rotation={[0, 0, Math.PI]}>
-        <planeGeometry args={[CARD_WIDTH * 0.75, CARD_HEIGHT * 0.75]} />
-        <meshStandardMaterial color="#DC143C" />
+        <planeGeometry args={[CARD_WIDTH * 0.7, CARD_WIDTH * 0.7]} />
+        <meshStandardMaterial map={logoTexture} transparent={true} />
       </mesh>
 
-      {/* Card back pattern - center design */}
-      <Text
-        position={[0, 0, -0.007]}
-        rotation={[0, 0, Math.PI]}
-        fontSize={0.8}
-        color="#FFFFFF"
-        anchorX="center"
-        anchorY="middle"
-      >
-        ◆
-      </Text>
+      {/* Card front - only render when face up */}
+      {faceUp && (
+        <>
+          {/* Card border/outline (top - front side) */}
+          <mesh position={[0, 0, 0.005]}>
+            <planeGeometry args={[CARD_WIDTH + 0.1, CARD_HEIGHT + 0.1]} />
+            <meshStandardMaterial color="#1a1a1a" />
+          </mesh>
 
-      {/* Card border/outline (top - front side) */}
-      <mesh position={[0, 0, 0.005]}>
-        <planeGeometry args={[CARD_WIDTH + 0.1, CARD_HEIGHT + 0.1]} />
-        <meshStandardMaterial color="#1a1a1a" />
-      </mesh>
+          {/* Card front (white background) */}
+          <mesh position={[0, 0, 0.01]}>
+            <planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
+            <meshStandardMaterial color="white" />
+          </mesh>
 
-      {/* Card front (white background) */}
-      <mesh position={[0, 0, 0.01]}>
-        <planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
-        <meshStandardMaterial color="white" />
-      </mesh>
+          {/* Rank text */}
+          <Text
+            position={[0, 0.5, 0.02]}
+            fontSize={0.4}
+            color={color}
+            anchorX="center"
+            anchorY="middle"
+          >
+            {card.rank}
+          </Text>
 
-      {/* Rank text */}
-      <Text
-        position={[0, 0.5, 0.02]}
-        fontSize={0.4}
-        color={color}
-        anchorX="center"
-        anchorY="middle"
-      >
-        {card.rank}
-      </Text>
-
-      {/* Suit symbol */}
-      <Text
-        position={[0, 0, 0.02]}
-        fontSize={0.6}
-        color={color}
-        anchorX="center"
-        anchorY="middle"
-      >
-        {symbol}
-      </Text>
+          {/* Suit symbol */}
+          <Text
+            position={[0, 0, 0.02]}
+            fontSize={0.6}
+            color={color}
+            anchorX="center"
+            anchorY="middle"
+          >
+            {symbol}
+          </Text>
+        </>
+      )}
     </animated.group>
   );
 }
