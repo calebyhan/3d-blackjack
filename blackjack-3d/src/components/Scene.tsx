@@ -3,6 +3,62 @@ import { Table } from './Table';
 import { Hand } from './Hand';
 import { ChipStack } from './Chip';
 import { useGameStore } from '../store/gameStore';
+import { useTexture } from '@react-three/drei';
+import uncLogo from '../assets/unc-logo.png';
+
+// Deck component - must be inside Canvas to use useTexture
+function Deck({ position }: { position: [number, number, number] }) {
+  const logoTexture = useTexture(uncLogo);
+  const CARD_WIDTH = 1.4;
+  const CARD_HEIGHT = 2;
+  const CARD_THICKNESS = 0.02;
+  const NUM_VISIBLE_CARDS = 25; // Number of card layers visible in the deck
+
+  return (
+    <group position={position} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* Stack of cards */}
+      {Array.from({ length: NUM_VISIBLE_CARDS }).map((_, i) => {
+        const yOffset = i * CARD_THICKNESS;
+
+        return (
+          <group key={i} position={[0, 0, yOffset]}>
+            {/* Card border (black edge) */}
+            <mesh>
+              <boxGeometry args={[CARD_WIDTH + 0.05, CARD_HEIGHT + 0.05, CARD_THICKNESS]} />
+              <meshStandardMaterial color="#1a1a1a" />
+            </mesh>
+
+            {/* Card back base (Carolina Blue) */}
+            <mesh position={[0, 0, CARD_THICKNESS / 2 + 0.001]}>
+              <planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
+              <meshStandardMaterial color="#7BAFD4" />
+            </mesh>
+
+            {/* White border frame */}
+            <mesh position={[0, 0, CARD_THICKNESS / 2 + 0.002]}>
+              <planeGeometry args={[CARD_WIDTH * 0.9, CARD_HEIGHT * 0.9]} />
+              <meshStandardMaterial color="#FFFFFF" />
+            </mesh>
+
+            {/* Carolina Blue inner area */}
+            <mesh position={[0, 0, CARD_THICKNESS / 2 + 0.003]}>
+              <planeGeometry args={[CARD_WIDTH * 0.8, CARD_HEIGHT * 0.8]} />
+              <meshStandardMaterial color="#7BAFD4" />
+            </mesh>
+
+            {/* UNC Logo (only on top few cards for performance) */}
+            {i >= NUM_VISIBLE_CARDS - 5 && (
+              <mesh position={[0, 0, CARD_THICKNESS / 2 + 0.004]} rotation={[0, 0, Math.PI]}>
+                <planeGeometry args={[CARD_WIDTH * 0.7, CARD_WIDTH * 0.7]} />
+                <meshStandardMaterial map={logoTexture} transparent={true} />
+              </mesh>
+            )}
+          </group>
+        );
+      })}
+    </group>
+  );
+}
 
 export function Scene() {
   const playerHand = useGameStore((state) => state.playerHand);
@@ -64,12 +120,7 @@ export function Scene() {
       />
 
       {/* Deck stack (right side) */}
-      <group position={[5.5, 0.15, 0]}>
-        <mesh castShadow>
-          <boxGeometry args={[1.4, 0.5, 2]} />
-          <meshStandardMaterial color="#13294B" roughness={0.6} />
-        </mesh>
-      </group>
+      <Deck position={[5.5, 0.15, 0]} />
     </Canvas>
   );
 }
