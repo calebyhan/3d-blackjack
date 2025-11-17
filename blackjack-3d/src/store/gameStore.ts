@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Card, GameState, GameStore } from '../game/types';
+import type { GameStore } from '../game/types';
 import { createDeck } from '../game/deck';
 import { calculateHandValue, determineWinner, isBust } from '../game/rules';
 import { shouldDealerHit } from '../game/dealer';

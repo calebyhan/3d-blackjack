@@ -1,6 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useSpring, animated } from '@react-spring/three';
-import { Text, useTexture } from '@react-three/drei';
+import { useTexture } from '@react-three/drei';
 import type { Card as CardType } from '../game/types';
 import * as THREE from 'three';
 import uncLogo from '../assets/unc-logo.png';
@@ -17,7 +17,7 @@ const CARD_HEIGHT = 2;
 
 // Get card color
 function getCardColor(suit: string): string {
-  return suit === 'H' || suit === 'D' ? '#ff0000' : '#000000';
+  return suit === 'H' || suit === 'D' ? '#dc143c' : '#000000';
 }
 
 // Get suit symbol
@@ -26,11 +26,65 @@ function getSuitSymbol(suit: string): string {
   return symbols[suit as keyof typeof symbols] || suit;
 }
 
+// Generate card face texture procedurally
+function generateCardFaceTexture(rank: string, suit: string): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 716; // Poker card ratio (2.5:3.5)
+  const ctx = canvas.getContext('2d')!;
+
+  // White background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Border
+  ctx.strokeStyle = '#cccccc';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+  // Get suit symbol and color
+  const symbol = getSuitSymbol(suit);
+  const color = getCardColor(suit);
+  ctx.fillStyle = color;
+
+  // Top-left corner
+  ctx.font = 'bold 72px serif';
+  ctx.fillText(rank, 30, 90);
+  ctx.font = '60px serif';
+  ctx.fillText(symbol, 30, 160);
+
+  // Center symbol (large)
+  ctx.font = '180px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(symbol, canvas.width / 2, canvas.height / 2);
+
+  // Bottom-right corner (rotated)
+  ctx.save();
+  ctx.translate(canvas.width - 30, canvas.height - 30);
+  ctx.rotate(Math.PI);
+  ctx.font = 'bold 72px serif';
+  ctx.fillText(rank, 0, 60);
+  ctx.font = '60px serif';
+  ctx.fillText(symbol, 0, 130);
+  ctx.restore();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  return texture;
+}
+
 export function Card({ card, position, faceUp, index }: CardProps) {
   const meshRef = useRef<THREE.Group>(null);
 
   // Load UNC logo texture
   const logoTexture = useTexture(uncLogo);
+
+  // Generate card face texture (memoized for performance)
+  const faceTexture = useMemo(
+    () => generateCardFaceTexture(card.rank, card.suit),
+    [card.rank, card.suit]
+  );
 
   // Animate card flip
   const { rotationY } = useSpring({
@@ -46,78 +100,42 @@ export function Card({ card, position, faceUp, index }: CardProps) {
     position[2]
   ];
 
-  const color = getCardColor(card.suit);
-  const symbol = getSuitSymbol(card.suit);
-
   return (
     <animated.group
       ref={meshRef}
       position={finalPosition}
       rotation-x={-Math.PI / 2}
-      rotation-z={rotationY}
+      rotation-y={rotationY}
     >
-      {/* Card border/outline (bottom - back side) */}
-      <mesh position={[0, 0, -0.015]}>
-        <planeGeometry args={[CARD_WIDTH + 0.1, CARD_HEIGHT + 0.1]} />
-        <meshStandardMaterial color="#13294B" />
+      {/* Card border/outline */}
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[CARD_WIDTH + 0.05, CARD_HEIGHT + 0.05, 0.02]} />
+        <meshStandardMaterial color="#1a1a1a" />
       </mesh>
 
-      {/* Card back (UNC Carolina Blue) */}
-      <mesh position={[0, 0, -0.01]} rotation={[0, 0, Math.PI]}>
+      {/* Card back (UNC Carolina Blue) - bottom side when face down */}
+      <mesh position={[0, 0, -0.015]} rotation={[Math.PI, 0, 0]}>
         <planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
-        <meshStandardMaterial color="#7BAFD4" />
+        <meshStandardMaterial color="#7BAFD4" side={THREE.DoubleSide} />
       </mesh>
 
       {/* Card back pattern - white border */}
-      <mesh position={[0, 0, -0.009]} rotation={[0, 0, Math.PI]}>
+      <mesh position={[0, 0, -0.014]} rotation={[Math.PI, 0, 0]}>
         <planeGeometry args={[CARD_WIDTH * 0.9, CARD_HEIGHT * 0.9]} />
-        <meshStandardMaterial color="#FFFFFF" />
+        <meshStandardMaterial color="#FFFFFF" side={THREE.DoubleSide} />
       </mesh>
 
       {/* UNC Logo image */}
-      <mesh position={[0, 0, -0.008]} rotation={[0, 0, Math.PI]}>
+      <mesh position={[0, 0, -0.016]} rotation={[Math.PI, 0, 0]}>
         <planeGeometry args={[CARD_WIDTH * 0.7, CARD_WIDTH * 0.7]} />
-        <meshStandardMaterial map={logoTexture} transparent={true} />
+        <meshStandardMaterial map={logoTexture} transparent={true} side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Card front - only render when face up */}
-      {faceUp && (
-        <>
-          {/* Card border/outline (top - front side) */}
-          <mesh position={[0, 0, 0.005]}>
-            <planeGeometry args={[CARD_WIDTH + 0.1, CARD_HEIGHT + 0.1]} />
-            <meshStandardMaterial color="#1a1a1a" />
-          </mesh>
-
-          {/* Card front (white background) */}
-          <mesh position={[0, 0, 0.01]}>
-            <planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
-            <meshStandardMaterial color="white" />
-          </mesh>
-
-          {/* Rank text */}
-          <Text
-            position={[0, 0.5, 0.02]}
-            fontSize={0.4}
-            color={color}
-            anchorX="center"
-            anchorY="middle"
-          >
-            {card.rank}
-          </Text>
-
-          {/* Suit symbol */}
-          <Text
-            position={[0, 0, 0.02]}
-            fontSize={0.6}
-            color={color}
-            anchorX="center"
-            anchorY="middle"
-          >
-            {symbol}
-          </Text>
-        </>
-      )}
+      {/* Card front with procedural texture - top side when face up */}
+      <mesh position={[0, 0, 0.015]}>
+        <planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
+        <meshStandardMaterial map={faceTexture} side={THREE.DoubleSide} />
+      </mesh>
     </animated.group>
   );
 }
