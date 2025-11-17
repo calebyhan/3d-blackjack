@@ -86,11 +86,8 @@ export function Card({ card, position, faceUp, index }: CardProps) {
     [card.rank, card.suit]
   );
 
-  // Animate card flip
-  const { rotationY } = useSpring({
-    rotationY: faceUp ? 0 : Math.PI,
-    config: { tension: 200, friction: 25 }
-  });
+  // Deck position (where cards start)
+  const DECK_POSITION: [number, number, number] = [5.5, 0.7, 0];
 
   // Stagger card appearance
   const offsetX = index * 1.6; // Spread cards horizontally with more spacing
@@ -100,10 +97,28 @@ export function Card({ card, position, faceUp, index }: CardProps) {
     position[2]
   ];
 
+  // Animate card dealing from deck to final position
+  const { animatedPosition } = useSpring({
+    from: {
+      animatedPosition: DECK_POSITION,
+    },
+    to: {
+      animatedPosition: finalPosition,
+    },
+    delay: index * 150, // Stagger each card
+    config: { tension: 120, friction: 20 }
+  });
+
+  // Separate animation for card flip (so it can update independently)
+  const { rotationY } = useSpring({
+    rotationY: faceUp ? 0 : Math.PI,
+    config: { tension: 200, friction: 25 }
+  });
+
   return (
     <animated.group
       ref={meshRef}
-      position={finalPosition}
+      position={animatedPosition as any}
       rotation-x={-Math.PI / 2}
       rotation-y={rotationY}
     >
@@ -113,20 +128,26 @@ export function Card({ card, position, faceUp, index }: CardProps) {
         <meshStandardMaterial color="#1a1a1a" />
       </mesh>
 
-      {/* Card back (UNC Carolina Blue) - bottom side when face down */}
+      {/* Card back base (Carolina Blue) - bottom side when face down */}
       <mesh position={[0, 0, -0.015]} rotation={[Math.PI, 0, 0]}>
         <planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
         <meshStandardMaterial color="#7BAFD4" side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Card back pattern - white border */}
-      <mesh position={[0, 0, -0.014]} rotation={[Math.PI, 0, 0]}>
+      {/* White border frame */}
+      <mesh position={[0, 0, -0.015]} rotation={[Math.PI, 0, 0]}>
         <planeGeometry args={[CARD_WIDTH * 0.9, CARD_HEIGHT * 0.9]} />
         <meshStandardMaterial color="#FFFFFF" side={THREE.DoubleSide} />
       </mesh>
 
-      {/* UNC Logo image */}
+      {/* Carolina Blue inner area */}
       <mesh position={[0, 0, -0.016]} rotation={[Math.PI, 0, 0]}>
+        <planeGeometry args={[CARD_WIDTH * 0.8, CARD_HEIGHT * 0.8]} />
+        <meshStandardMaterial color="#7BAFD4" side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* UNC Logo image */}
+      <mesh position={[0, 0, -0.016]} rotation={[Math.PI, 0, Math.PI]}>
         <planeGeometry args={[CARD_WIDTH * 0.7, CARD_WIDTH * 0.7]} />
         <meshStandardMaterial map={logoTexture} transparent={true} side={THREE.DoubleSide} />
       </mesh>

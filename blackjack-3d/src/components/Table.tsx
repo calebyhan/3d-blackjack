@@ -88,7 +88,7 @@ export function Table() {
       </Text>
 
       {/* UNC Logo in center of table */}
-      <mesh position={[0, 0.07, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, 0.07, 0]} rotation={[-Math.PI / 2, 0, Math.PI]}>
         <planeGeometry args={[2, 2]} />
         <meshStandardMaterial
           map={logoTexture}
