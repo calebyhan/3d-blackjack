@@ -19,9 +19,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   startNewGame: () => {
     const deck = createDeck();
 
-    // Deal initial cards (player, dealer, player, dealer)
-    const playerHand = [deck.pop()!, deck.pop()!];
-    const dealerHand = [deck.pop()!, deck.pop()!];
+    // Deal initial cards alternating: player, dealer, player, dealer
+    const card1 = deck.pop()!; // Player first card
+    const card2 = deck.pop()!; // Dealer first card (upcard - visible)
+    const card3 = deck.pop()!; // Player second card
+    const card4 = deck.pop()!; // Dealer second card (hole card - hidden)
+    
+    const playerHand = [card1, card3];
+    const dealerHand = [card2, card4];
 
     set({
       deck,
