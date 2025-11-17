@@ -48,7 +48,7 @@ function Deck({ position }: { position: [number, number, number] }) {
 
             {/* UNC Logo (only on top few cards for performance) */}
             {i >= NUM_VISIBLE_CARDS - 5 && (
-              <mesh position={[0, 0, CARD_THICKNESS / 2 + 0.004]} rotation={[0, 0, Math.PI]}>
+              <mesh position={[0, 0, CARD_THICKNESS / 2 + 0.004]} rotation={[0, 0, 0]}>
                 <planeGeometry args={[CARD_WIDTH * 0.7, CARD_WIDTH * 0.7]} />
                 <meshStandardMaterial map={logoTexture} transparent={true} />
               </mesh>

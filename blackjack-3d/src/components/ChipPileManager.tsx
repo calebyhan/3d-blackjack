@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSpring, animated, config } from '@react-spring/three';
 import { Chip } from './Chip';
-import { useGameStore } from '../store/gameStore';
 
 // Convert an amount to an array of chip denominations
 function amountToChips(amount: number): number[] {
