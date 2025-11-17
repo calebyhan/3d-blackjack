@@ -76,7 +76,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         gameState: 'game-over',
         dealerShowAll: true,
         dealerScore: calculateHandValue(state.dealerHand),
-        message: `Bust! You lose $${state.currentBet}.`,
+        message: `Bust! You lose $${state.currentBet.toLocaleString()}.`,
         playerBalance: state.playerBalance - state.currentBet,
         currentBet: 0
       });
@@ -177,15 +177,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return;
     }
 
-    // Don't allow bet higher than $10,000
-    if (newBet > 10000) {
-      set({ message: 'Maximum bet is $10,000!' });
-      return;
-    }
-
     set({
       currentBet: newBet,
-      message: `Bet: $${newBet}. Click Deal to start!`
+      message: `Bet: $${newBet.toLocaleString()}. Click Deal to start!`
     });
   },
 
@@ -220,10 +214,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (isBust(dealerHand)) {
       if (playerHasBlackjack) {
         payout = bet * 2.5; // Return bet + 1.5x
-        newMessage = `Blackjack! You win $${bet * 1.5}!`;
+        newMessage = `Blackjack! You win $${(bet * 1.5).toLocaleString()}!`;
       } else {
         payout = bet * 2; // Return bet + bet
-        newMessage = `Dealer busts! You win $${bet}!`;
+        newMessage = `Dealer busts! You win $${bet.toLocaleString()}!`;
       }
     }
     // Both have blackjack - push
@@ -234,20 +228,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // Player has blackjack
     else if (playerHasBlackjack) {
       payout = bet * 2.5; // Return bet + 1.5x
-      newMessage = `Blackjack! You win $${bet * 1.5}!`;
+      newMessage = `Blackjack! You win $${(bet * 1.5).toLocaleString()}!`;
     }
     // Dealer has blackjack
     else if (dealerHasBlackjack) {
       payout = 0; // Lose bet
-      newMessage = `Dealer Blackjack! You lose $${bet}.`;
+      newMessage = `Dealer Blackjack! You lose $${bet.toLocaleString()}.`;
     }
     // Compare values
     else if (playerValue > dealerValue) {
       payout = bet * 2; // Return bet + bet
-      newMessage = `You win $${bet}!`;
+      newMessage = `You win $${bet.toLocaleString()}!`;
     } else if (playerValue < dealerValue) {
       payout = 0; // Lose bet
-      newMessage = `You lose $${bet}.`;
+      newMessage = `You lose $${bet.toLocaleString()}.`;
     } else {
       payout = bet; // Return bet
       newMessage = `Push! Bet returned.`;
