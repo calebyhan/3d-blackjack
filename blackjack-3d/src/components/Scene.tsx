@@ -1,22 +1,15 @@
 import { Canvas } from '@react-three/fiber';
 import { Table } from './Table';
 import { Hand } from './Hand';
-import { ChipStack } from './Chip';
+import { ChipPileManager } from './ChipPileManager';
 import { useGameStore } from '../store/gameStore';
 
 export function Scene() {
   const playerHand = useGameStore((state) => state.playerHand);
   const dealerHand = useGameStore((state) => state.dealerHand);
   const dealerShowAll = useGameStore((state) => state.dealerShowAll);
-
-  // Example chip stacks (can be connected to game state later)
-  const playerChips = [
-    { value: 100 },
-    { value: 100 },
-    { value: 50 },
-    { value: 25 },
-    { value: 25 }
-  ];
+  const playerBalance = useGameStore((state) => state.playerBalance);
+  const currentBet = useGameStore((state) => state.currentBet);
 
   return (
     <Canvas
@@ -57,10 +50,10 @@ export function Scene() {
         isDealer={false}
       />
 
-      {/* Player's chip stack */}
-      <ChipStack
-        chips={playerChips}
-        position={[-6, 0.15, 3]}
+      {/* Dynamic chip piles (player pile + bet pile) */}
+      <ChipPileManager
+        balance={playerBalance}
+        currentBet={currentBet}
       />
 
       {/* Deck stack (right side) */}
