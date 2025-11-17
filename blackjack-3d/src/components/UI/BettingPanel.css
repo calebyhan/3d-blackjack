@@ -1,0 +1,189 @@
+.betting-panel {
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #ffd700;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.balance-display,
+.bet-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.balance-label,
+.bet-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffd700;
+}
+
+.balance-amount,
+.bet-amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+}
+
+.chips-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.chip-button {
+  background: linear-gradient(145deg, #d32f2f, #b71c1c);
+  color: white;
+  border: 3px solid #ffd700;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  justify-self: center;
+}
+
+.chip-button:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(255, 215, 0, 0.4);
+}
+
+.chip-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.chip-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.betting-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.all-in-button,
+.clear-button,
+.deal-button,
+.reset-button,
+.new-game-button {
+  flex: 1;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: 2px solid;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.all-in-button {
+  background: linear-gradient(145deg, #ff6b6b, #c92a2a);
+  color: white;
+  border-color: #ffd700;
+}
+
+.all-in-button:hover:not(:disabled) {
+  background: linear-gradient(145deg, #ff8787, #e03131);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 107, 107, 0.4);
+}
+
+.clear-button {
+  background: linear-gradient(145deg, #868e96, #495057);
+  color: white;
+  border-color: #adb5bd;
+}
+
+.clear-button:hover:not(:disabled) {
+  background: linear-gradient(145deg, #adb5bd, #6c757d);
+  transform: translateY(-2px);
+}
+
+.deal-button {
+  background: linear-gradient(145deg, #51cf66, #2f9e44);
+  color: white;
+  border-color: #ffd700;
+  font-size: 18px;
+}
+
+.deal-button:hover:not(:disabled) {
+  background: linear-gradient(145deg, #69db7c, #37b24d);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(81, 207, 102, 0.4);
+}
+
+.all-in-button:disabled,
+.clear-button:disabled,
+.deal-button:disabled,
+.reset-button:disabled,
+.new-game-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.bankruptcy-section {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.bankruptcy-message {
+  color: #ff6b6b;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.reset-button {
+  background: linear-gradient(145deg, #ffd700, #ffa500);
+  color: #000;
+  border-color: #fff;
+  width: 100%;
+}
+
+.reset-button:hover:not(:disabled) {
+  background: linear-gradient(145deg, #ffe234, #ffb732);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
+}
+
+.game-over-section {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.result-message {
+  color: #ffd700;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.new-game-button {
+  background: linear-gradient(145deg, #51cf66, #2f9e44);
+  color: white;
+  border-color: #ffd700;
+  width: 100%;
+}
+
+.new-game-button:hover:not(:disabled) {
+  background: linear-gradient(145deg, #69db7c, #37b24d);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(81, 207, 102, 0.4);
+}
