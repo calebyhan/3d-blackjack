@@ -35,7 +35,7 @@ export function Card({ card, position, faceUp, index }: CardProps) {
   });
 
   // Stagger card appearance
-  const offsetX = index * 0.6; // Spread cards horizontally
+  const offsetX = index * 1.6; // Spread cards horizontally with more spacing
   const finalPosition: [number, number, number] = [
     position[0] + offsetX,
     position[1],
@@ -49,8 +49,51 @@ export function Card({ card, position, faceUp, index }: CardProps) {
     <animated.group
       ref={meshRef}
       position={finalPosition}
-      rotation-y={rotationY}
+      rotation-x={-Math.PI / 2}
+      rotation-z={rotationY}
     >
+      {/* Card border/outline (bottom - back side) */}
+      <mesh position={[0, 0, -0.015]}>
+        <planeGeometry args={[CARD_WIDTH + 0.1, CARD_HEIGHT + 0.1]} />
+        <meshStandardMaterial color="#8B0000" />
+      </mesh>
+
+      {/* Card back (red pattern) */}
+      <mesh position={[0, 0, -0.01]} rotation={[0, 0, Math.PI]}>
+        <planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
+        <meshStandardMaterial color="#DC143C" />
+      </mesh>
+
+      {/* Card back pattern - inner white border */}
+      <mesh position={[0, 0, -0.009]} rotation={[0, 0, Math.PI]}>
+        <planeGeometry args={[CARD_WIDTH * 0.85, CARD_HEIGHT * 0.85]} />
+        <meshStandardMaterial color="#FFFFFF" />
+      </mesh>
+
+      {/* Card back pattern - inner red area */}
+      <mesh position={[0, 0, -0.008]} rotation={[0, 0, Math.PI]}>
+        <planeGeometry args={[CARD_WIDTH * 0.75, CARD_HEIGHT * 0.75]} />
+        <meshStandardMaterial color="#DC143C" />
+      </mesh>
+
+      {/* Card back pattern - center design */}
+      <Text
+        position={[0, 0, -0.007]}
+        rotation={[0, 0, Math.PI]}
+        fontSize={0.8}
+        color="#FFFFFF"
+        anchorX="center"
+        anchorY="middle"
+      >
+        ◆
+      </Text>
+
+      {/* Card border/outline (top - front side) */}
+      <mesh position={[0, 0, 0.005]}>
+        <planeGeometry args={[CARD_WIDTH + 0.1, CARD_HEIGHT + 0.1]} />
+        <meshStandardMaterial color="#1a1a1a" />
+      </mesh>
+
       {/* Card front (white background) */}
       <mesh position={[0, 0, 0.01]}>
         <planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
@@ -78,18 +121,6 @@ export function Card({ card, position, faceUp, index }: CardProps) {
       >
         {symbol}
       </Text>
-
-      {/* Card back (blue pattern) */}
-      <mesh position={[0, 0, -0.01]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[CARD_WIDTH, CARD_HEIGHT]} />
-        <meshStandardMaterial color="#1e40af" />
-      </mesh>
-
-      {/* Card border/outline */}
-      <mesh position={[0, 0, 0]}>
-        <planeGeometry args={[CARD_WIDTH + 0.05, CARD_HEIGHT + 0.05]} />
-        <meshStandardMaterial color="#333333" />
-      </mesh>
     </animated.group>
   );
 }

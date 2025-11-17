@@ -12,8 +12,9 @@ export function Hand({ cards, position, showAll, isDealer }: HandProps) {
   return (
     <group position={position}>
       {cards.map((card, index) => {
-        // Dealer's first card is hidden until showAll is true
-        const faceUp = showAll || index > 0 || !isDealer;
+        // Dealer's second card (index 1 - hole card) is hidden until showAll
+        // All other cards are face up
+        const faceUp = !isDealer || showAll || index !== 1;
 
         return (
           <Card
