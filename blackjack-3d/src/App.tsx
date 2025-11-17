@@ -2,6 +2,7 @@ import { Scene } from './components/Scene';
 import { GameControls } from './components/UI/GameControls';
 import { ScoreDisplay } from './components/UI/ScoreDisplay';
 import { GameStatus } from './components/UI/GameStatus';
+import { BettingPanel } from './components/UI/BettingPanel';
 import './App.css';
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
         <h1>3D Blackjack</h1>
         <GameStatus />
         <ScoreDisplay />
+        <BettingPanel />
         <GameControls />
       </div>
 

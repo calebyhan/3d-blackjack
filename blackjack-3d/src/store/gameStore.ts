@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { GameStore } from '../game/types';
 import { createDeck } from '../game/deck';
-import { calculateHandValue, determineWinner, isBust } from '../game/rules';
+import { calculateHandValue, determineWinner, isBust, isBlackjack } from '../game/rules';
 import { shouldDealerHit } from '../game/dealer';
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -10,13 +10,31 @@ export const useGameStore = create<GameStore>((set, get) => ({
   playerHand: [],
   dealerHand: [],
   gameState: 'idle',
-  message: 'Click "New Game" to start',
+  message: 'Place your bet to start',
   playerScore: 0,
   dealerScore: 0,
   dealerShowAll: false,
 
+  // Betting state
+  playerBalance: 10000,
+  currentBet: 0,
+
   // Start a new game
   startNewGame: () => {
+    const state = get();
+
+    // Check if bet is placed
+    if (state.currentBet === 0) {
+      set({ message: 'Place a bet first!' });
+      return;
+    }
+
+    // Check if player has enough balance
+    if (state.currentBet > state.playerBalance) {
+      set({ message: 'Insufficient balance!' });
+      return;
+    }
+
     const deck = createDeck();
 
     // Deal initial cards alternating: player, dealer, player, dealer
@@ -24,7 +42,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const card2 = deck.pop()!; // Dealer first card (upcard - visible)
     const card3 = deck.pop()!; // Player second card
     const card4 = deck.pop()!; // Dealer second card (hole card - hidden)
-    
+
     const playerHand = [card1, card3];
     const dealerHand = [card2, card4];
 
@@ -58,7 +76,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         gameState: 'game-over',
         dealerShowAll: true,
         dealerScore: calculateHandValue(state.dealerHand),
-        message: 'Bust! You lose.'
+        message: `Bust! You lose $${state.currentBet.toLocaleString()}.`,
+        playerBalance: state.playerBalance - state.currentBet,
+        currentBet: 0
       });
     } else {
       set({
@@ -115,8 +135,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   // Play dealer's turn
   playDealerTurn: () => {
     const state = get();
-    let dealerHand = [...state.dealerHand];
-    let deck = [...state.deck];
+    const dealerHand = [...state.dealerHand];
+    const deck = [...state.deck];
 
     // Dealer hits until 17+
     while (shouldDealerHit(dealerHand)) {
@@ -134,6 +154,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       gameState: 'game-over',
       message
     });
+
+    // Process bet result after determining winner
+    get().processBetResult();
   },
 
   // Determine winner (called after dealer's turn)
@@ -141,5 +164,117 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
     const message = determineWinner(state.playerHand, state.dealerHand);
     set({ message, gameState: 'game-over' });
+  },
+
+  // Betting actions
+  placeBet: (amount: number) => {
+    const state = get();
+    const newBet = state.currentBet + amount;
+
+    // Don't allow bet higher than balance
+    if (newBet > state.playerBalance) {
+      set({ message: 'Insufficient balance!' });
+      return;
+    }
+
+    set({
+      currentBet: newBet,
+      message: `Bet: $${newBet.toLocaleString()}. Click Deal to start!`
+    });
+  },
+
+  clearBet: () => {
+    set({
+      currentBet: 0,
+      message: 'Place your bet to start'
+    });
+  },
+
+  processBetResult: () => {
+    const state = get();
+    const playerHand = state.playerHand;
+    const dealerHand = state.dealerHand;
+    const bet = state.currentBet;
+
+    // Determine outcome
+    const playerValue = calculateHandValue(playerHand);
+    const dealerValue = calculateHandValue(dealerHand);
+    const playerHasBlackjack = isBlackjack(playerHand);
+    const dealerHasBlackjack = isBlackjack(dealerHand);
+
+    let payout = 0;
+    let newMessage = '';
+
+    // Player busts - already handled in hit()
+    if (isBust(playerHand)) {
+      return; // Already deducted in hit()
+    }
+
+    // Dealer busts, player wins
+    if (isBust(dealerHand)) {
+      if (playerHasBlackjack) {
+        payout = bet * 2.5; // Return bet + 1.5x
+        newMessage = `Blackjack! You win $${(bet * 1.5).toLocaleString()}!`;
+      } else {
+        payout = bet * 2; // Return bet + bet
+        newMessage = `Dealer busts! You win $${bet.toLocaleString()}!`;
+      }
+    }
+    // Both have blackjack - push
+    else if (playerHasBlackjack && dealerHasBlackjack) {
+      payout = bet; // Return bet
+      newMessage = `Push! Bet returned.`;
+    }
+    // Player has blackjack
+    else if (playerHasBlackjack) {
+      payout = bet * 2.5; // Return bet + 1.5x
+      newMessage = `Blackjack! You win $${(bet * 1.5).toLocaleString()}!`;
+    }
+    // Dealer has blackjack
+    else if (dealerHasBlackjack) {
+      payout = 0; // Lose bet
+      newMessage = `Dealer Blackjack! You lose $${bet.toLocaleString()}.`;
+    }
+    // Compare values
+    else if (playerValue > dealerValue) {
+      payout = bet * 2; // Return bet + bet
+      newMessage = `You win $${bet.toLocaleString()}!`;
+    } else if (playerValue < dealerValue) {
+      payout = 0; // Lose bet
+      newMessage = `You lose $${bet.toLocaleString()}.`;
+    } else {
+      payout = bet; // Return bet
+      newMessage = `Push! Bet returned.`;
+    }
+
+    const newBalance = state.playerBalance - bet + payout;
+
+    set({
+      playerBalance: newBalance,
+      currentBet: 0,
+      message: newMessage
+    });
+
+    // Check for bankruptcy
+    if (newBalance === 0) {
+      setTimeout(() => {
+        set({ message: 'Bankrupt! Click Reset to start over.' });
+      }, 2000);
+    }
+  },
+
+  resetBalance: () => {
+    set({
+      playerBalance: 10000,
+      currentBet: 0,
+      gameState: 'idle',
+      message: 'Place your bet to start',
+      deck: [],
+      playerHand: [],
+      dealerHand: [],
+      playerScore: 0,
+      dealerScore: 0,
+      dealerShowAll: false
+    });
   }
 }));

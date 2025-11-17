@@ -22,6 +22,10 @@ export interface GameStore {
   dealerScore: number;
   dealerShowAll: boolean; // Show dealer's hidden card
 
+  // Betting
+  playerBalance: number;
+  currentBet: number;
+
   // Actions
   startNewGame: () => void;
   hit: () => void;
@@ -30,4 +34,10 @@ export interface GameStore {
   updateScores: () => void;
   playDealerTurn: () => void;
   determineWinner: () => void;
+
+  // Betting actions
+  placeBet: (amount: number) => void;
+  clearBet: () => void;
+  processBetResult: () => void;
+  resetBalance: () => void;
 }

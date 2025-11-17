@@ -4,16 +4,11 @@ export function GameControls() {
   const gameState = useGameStore((state) => state.gameState);
   const hit = useGameStore((state) => state.hit);
   const stand = useGameStore((state) => state.stand);
-  const startNewGame = useGameStore((state) => state.startNewGame);
 
+  // Only show controls during active play
+  // Betting panel handles idle and game-over states
   return (
     <div className="game-controls">
-      {gameState === 'idle' && (
-        <button onClick={startNewGame} className="btn btn-primary">
-          New Game
-        </button>
-      )}
-
       {gameState === 'playing' && (
         <>
           <button onClick={hit} className="btn btn-success">
@@ -23,12 +18,6 @@ export function GameControls() {
             Stand
           </button>
         </>
-      )}
-
-      {(gameState === 'game-over' || gameState === 'dealer-turn') && (
-        <button onClick={startNewGame} className="btn btn-primary">
-          New Game
-        </button>
       )}
     </div>
   );
