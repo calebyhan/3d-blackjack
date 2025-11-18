@@ -1,1 +1,0 @@
-# claude-mini-hackathon-25
